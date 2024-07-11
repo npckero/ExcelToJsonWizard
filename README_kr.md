@@ -60,3 +60,38 @@
 
 5. **Resource 로딩 문제**:
    - Unity의 `Resources.Load`를 사용하는 경우 경로가 정확하고 파일이 Resources 폴더에 존재하는지 확인하십시오.
+
+
+## 활용 방법
+1. 유니티 Resources 폴더 사용할 때 설정법
+Unity의 Resources 폴더를 사용하여 JSON 파일을 로드하려면 config.txt 파일에서 useResources 옵션을 true로 설정하고, resourcesInternalPath를 설정합니다. 
+
+다음 단계를 따르십시오:
+
+   1. config.txt 파일을 엽니다.
+   2. 다음 항목을 설정합니다:
+   - useResources=true
+   - resourcesInternalPath에 JSON 파일이 저장될 Resources 폴더 내의 경로를 설정합니다. 예를 들어, resourcesInternalPath=Data/JsonFiles라고 설정하면 Resources/Data/JsonFiles 경로를 사용하게 됩니다.
+   3. 엑셀 파일을 변환하여 JSON 파일을 생성합니다.
+   4. 생성된 JSON 파일을 Unity 프로젝트의 Resources 폴더 내의 설정된 경로에 복사합니다.
+
+   json 파일 생성 경로를 미리 Resources 폴더에 연결해두면 바로사용 가능 합니다.
+
+2. 멀티 시트 사용할 때 설정법
+엑셀 파일에 여러 시트가 있는 경우, 각 시트를 변환하려면 config.txt 파일에서 allowMultipleSheets 옵션을 true로 설정합니다. 
+
+다음 단계를 따르십시오:
+
+   1. config.txt 파일을 엽니다.
+   2. 다음 항목을 설정합니다:
+   - allowMultipleSheets=true
+   3. 엑셀 파일을 준비합니다. 각 시트는 서로 다른 데이터 구조를 가질 수 있습니다.
+   4. 도구를 실행하여 JSON 파일과 C# 로더 클래스를 생성합니다. 각 시트에 대해 별도의 JSON 파일과 로더 클래스가 생성됩니다.
+
+   예를 들어, Example_Multiple_Sheets.xlsx 파일이 있고 Sheet1과 Sheet2가 있다면, 다음과 같은 파일들이 생성됩니다:
+
+   - Example_Multiple_Sheets_Sheet1.json
+   - Example_Multiple_Sheets_Sheet2.json
+   - Example_Multiple_Sheets_Sheet1Loader.cs
+   - Example_Multiple_Sheets_Sheet2Loader.cs
+   이렇게 생성된 파일들을 사용하여 다양한 시트 데이터를 처리할 수 있습니다.
