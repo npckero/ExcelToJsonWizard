@@ -38,6 +38,10 @@ namespace ExcelToJsonWizard
             enumMappings = LoadEnumDefinitionsAndGenerateCs(excelDirectoryPath, loaderOutputDirectory, logFilePath);
 
             ProcessExcelFiles(excelDirectoryPath, loaderOutputDirectory, jsonOutputDirectory, logFilePath, allowMultipleSheets, useResources, resourcesInternalPath);
+            
+            // 프로그램 완료 후 콘솔 창을 유지합니다.
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadLine();
         }
 
         static Dictionary<string, string> LoadConfiguration(string configFilePath)
