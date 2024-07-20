@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using ClosedXML.Excel;
 using System.Text.Json;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace ExcelToJsonWizard
 {
@@ -383,7 +385,11 @@ namespace ExcelToJsonWizard
 
                             var jsonOutputPath = Path.Combine(jsonDir, $"{className}.json");
                             var wrapper = new { Items = jsonArray };
-                            var jsonData = JsonSerializer.Serialize(wrapper, new JsonSerializerOptions { WriteIndented = true });
+                            var jsonData = JsonSerializer.Serialize(wrapper, new JsonSerializerOptions
+                            {
+                                WriteIndented = true,
+                                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+                            });
                             File.WriteAllText(jsonOutputPath, jsonData);
                             Console.WriteLine($"JSON file generated at {className}\n");
                         }
