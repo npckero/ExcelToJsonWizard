@@ -40,7 +40,7 @@ namespace ExcelToJsonWizard
             enumMappings = LoadEnumDefinitionsAndGenerateCs(excelDirectoryPath, loaderOutputDirectory, logFilePath);
 
             ProcessExcelFiles(excelDirectoryPath, loaderOutputDirectory, jsonOutputDirectory, logFilePath, allowMultipleSheets, useResources, resourcesInternalPath);
-            
+
             // 프로그램 완료 후 콘솔 창을 유지합니다.
             Console.WriteLine("Press any key to exit...");
             Console.ReadLine();
@@ -349,6 +349,17 @@ namespace ExcelToJsonWizard
                             sb.AppendLine("    {");
                             sb.AppendLine($"        public List<{className}> Items;");
                             sb.AppendLine("    }");
+                            sb.AppendLine();
+
+                            // GetByKey 메서드 추가
+                            sb.AppendLine($"    public {className} GetByKey(int key)");
+                            sb.AppendLine("    {");
+                            sb.AppendLine("        if (ItemsDict.ContainsKey(key))");
+                            sb.AppendLine("        {");
+                            sb.AppendLine("            return ItemsDict[key];");
+                            sb.AppendLine("        }");
+                            sb.AppendLine("        return null;");
+                            sb.AppendLine("    }");
                             sb.AppendLine("}");
 
                             var jsonArray = new List<Dictionary<string, object>>();
@@ -520,5 +531,4 @@ namespace ExcelToJsonWizard
             }
         }
     }
-
 }
