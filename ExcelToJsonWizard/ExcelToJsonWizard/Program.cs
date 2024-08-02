@@ -360,6 +360,16 @@ namespace ExcelToJsonWizard
                             sb.AppendLine("        }");
                             sb.AppendLine("        return null;");
                             sb.AppendLine("    }");
+
+                            // GetByIndex 메서드 추가
+                            sb.AppendLine($"    public {className} GetByIndex(int index)");
+                            sb.AppendLine("    {");
+                            sb.AppendLine("        if (index >= 0 && index < ItemsList.Count)");
+                            sb.AppendLine("        {");
+                            sb.AppendLine("            return ItemsList[index];");
+                            sb.AppendLine("        }");
+                            sb.AppendLine("        return null;");
+                            sb.AppendLine("    }");
                             sb.AppendLine("}");
 
                             var jsonArray = new List<Dictionary<string, object>>();
