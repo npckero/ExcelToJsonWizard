@@ -89,8 +89,8 @@ namespace ExcelToJsonWizard
                     sw.WriteLine();
 
                     sw.WriteLine("# Resources 사용 설정");
-                    sw.WriteLine("useResources=false # Resources 폴더 사용 여부 (true/false)");
-                    sw.WriteLine("resourcesInternalPath=default/path # Resources 내부 경로");
+                    sw.WriteLine("useResources=true # Resources 폴더 사용 여부 (true/false)");
+                    sw.WriteLine("resourcesInternalPath=JSON # Resources 내부 경로");
                 }
 
                 config["defaultExcelDirectoryPath"] = "excel_files";
@@ -100,8 +100,8 @@ namespace ExcelToJsonWizard
                 config["loaderOutputDirectory"] = "loader_output";
                 config["jsonOutputDirectory"] = "json_output";
                 config["allowMultipleSheets"] = "false";
-                config["useResources"] = "false";
-                config["resourcesInternalPath"] = "default/path";
+                config["useResources"] = "true";
+                config["resourcesInternalPath"] = "JSON";
             }
 
             return config;
