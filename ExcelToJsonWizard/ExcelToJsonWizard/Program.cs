@@ -13,6 +13,7 @@ namespace ExcelToJsonWizard
     class Program
     {
         static Dictionary<string, Dictionary<string, int>> enumMappings;
+        static bool emptyValueDetectedInFile = false;  // 빈 값이 감지되었는지 여부를 추적하는 변수
 
         static void Main()
         {
@@ -230,6 +231,8 @@ namespace ExcelToJsonWizard
         {
             try
             {
+                emptyValueDetectedInFile = false;  // 새로운 파일을 처리할 때마다 초기화
+
                 using (var workbook = new XLWorkbook(excelPath))
                 {
                     IEnumerable<IXLWorksheet> sheets = allowMultipleSheets ? workbook.Worksheets : new[] { workbook.Worksheet(1) };
@@ -413,6 +416,13 @@ namespace ExcelToJsonWizard
                             });
                             File.WriteAllText(jsonOutputPath, jsonData);
                             Console.WriteLine($"JSON file generated at {className}\n");
+
+                            // 파일 처리 후, 빈 값이 감지되었을 때 메시지 출력
+                            if (emptyValueDetectedInFile)
+                            {
+                                Console.WriteLine($"Warning: Empty values detected in file '{excelPath}'. Default values were used.");
+                                LogError(logFilePath, $"Empty values detected in file '{excelPath}'. Default values were used.");
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -436,6 +446,45 @@ namespace ExcelToJsonWizard
         {
             try
             {
+                // 빈 칸일 경우 기본값 설정
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    // 파일 내에서 처음으로 빈 칸이 발견되면 플래그 설정
+                    if (!emptyValueDetectedInFile)
+                    {
+                        emptyValueDetectedInFile = true;
+                    }
+
+                    // 리스트 타입에서 빈 칸을 허용하지 않도록 메시지 출력
+                    if (type.StartsWith("List<"))
+                    {
+                        throw new Exception($"Empty values are not supported for list types. Variable '{variableName}' in sheet '{sheetName}' of file '{excelPath}' contains an empty value.");
+                    }
+
+                    // Enum 타입에서 빈 칸을 허용하지 않도록 메시지 출력
+                    if (type.StartsWith("Enum<"))
+                    {
+                        throw new Exception($"Empty values are not supported for Enum types. Variable '{variableName}' in sheet '{sheetName}' of file '{excelPath}' contains an empty value.");
+                    }
+
+                    // 타입에 따른 기본값 처리
+                    switch (type)
+                    {
+                        case "int":
+                            return 0;  // 기본값 0
+                        case "float":
+                            return 0.0f;  // 기본값 0.0f
+                        case "double":
+                            return 0.0;  // 기본값 0.0
+                        case "bool":
+                            return false;  // 기본값 false
+                        case "string":
+                            return "";  // 기본값 빈 문자열
+                        default:
+                            throw new Exception($"Unsupported data type: {type}");
+                    }
+                }
+
                 if (type.StartsWith("List<Enum<"))
                 {
                     var enumTypeName = type.Substring(10, type.Length - 12);
