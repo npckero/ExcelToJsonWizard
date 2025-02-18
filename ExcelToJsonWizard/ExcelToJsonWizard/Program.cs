@@ -17,19 +17,25 @@ namespace ExcelToJsonWizard
 
         static void Main()
         {
-            string configFilePath = "config.txt";
+            // 실행 파일의 현재 디렉토리 가져오기
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            // 설정 파일을 실행 파일 위치에서 찾도록 수정
+            string configFilePath = Path.Combine(basePath, "config.txt");
             var config = LoadConfiguration(configFilePath);
 
-            string defaultExcelDirectoryPath = ValidateOrCreateDirectory(config, "defaultExcelDirectoryPath", "excel_files");
-            string defaultLoaderOutputDirectory = ValidateOrCreateDirectory(config, "defaultLoaderOutputDirectory", "loader_output");
-            string defaultJsonOutputDirectory = ValidateOrCreateDirectory(config, "defaultJsonOutputDirectory", "json_output");
+
+            string defaultExcelDirectoryPath = "excel_files";
+            string defaultLoaderOutputDirectory = "loader_output";
+            string defaultJsonOutputDirectory = "json_output";
+
+            bool useAbsolutePath = config.ContainsKey("useAbsolutePath") && config["useAbsolutePath"].ToLower() == "true";
             bool allowMultipleSheets = config.ContainsKey("allowMultipleSheets") && config["allowMultipleSheets"].ToLower() == "true";
             bool useResources = config.ContainsKey("useResources") && config["useResources"].ToLower() == "true";
             string resourcesInternalPath = config.ContainsKey("resourcesInternalPath") ? config["resourcesInternalPath"] : "default/path";
 
-            string excelDirectoryPath = ValidateOrCreateDirectory(config, "excelDirectoryPath", defaultExcelDirectoryPath);
-            string loaderOutputDirectory = ValidateOrCreateDirectory(config, "loaderOutputDirectory", defaultLoaderOutputDirectory);
-            string jsonOutputDirectory = ValidateOrCreateDirectory(config, "jsonOutputDirectory", defaultJsonOutputDirectory);
+            string excelDirectoryPath = ValidateOrCreateDirectory(config, "excelDirectoryPath", defaultExcelDirectoryPath, useAbsolutePath, basePath);
+            string loaderOutputDirectory = ValidateOrCreateDirectory(config, "loaderOutputDirectory", defaultLoaderOutputDirectory,useAbsolutePath, basePath);
+            string jsonOutputDirectory = ValidateOrCreateDirectory(config, "jsonOutputDirectory", defaultJsonOutputDirectory, useAbsolutePath, basePath);
             string logFilePath = Path.Combine("log", $"{DateTime.Now:yyyy-MM-dd}_error_log.txt");
 
             if (!Directory.Exists("log"))
@@ -73,16 +79,14 @@ namespace ExcelToJsonWizard
             {
                 using (var sw = File.CreateText(configFilePath))
                 {
-                    sw.WriteLine("# 기본 디렉토리 설정");
-                    sw.WriteLine("defaultExcelDirectoryPath=excel_files # 엑셀 파일 디렉토리 기본 경로");
-                    sw.WriteLine("defaultLoaderOutputDirectory=loader_output # 로더 클래스 출력 디렉토리 기본 경로");
-                    sw.WriteLine("defaultJsonOutputDirectory=json_output # JSON 파일 출력 디렉토리 기본 경로");
-                    sw.WriteLine();
-
                     sw.WriteLine("# 사용자 지정 디렉토리 설정");
                     sw.WriteLine("excelDirectoryPath=excel_files # 엑셀 파일 디렉토리 경로");
                     sw.WriteLine("loaderOutputDirectory=loader_output # 로더 클래스 출력 디렉토리 경로");
                     sw.WriteLine("jsonOutputDirectory=json_output # JSON 파일 출력 디렉토리 경로");
+                    sw.WriteLine();
+
+                    sw.WriteLine("# 경로 타입 선택");
+                    sw.WriteLine("useAbsolutePath = false # 절대 경로를 사용할지 여부 (true: 절대 경로, false: 실행 파일 기준 상대 경로)");
                     sw.WriteLine();
 
                     sw.WriteLine("# 다중 시트 설정");
@@ -94,12 +98,10 @@ namespace ExcelToJsonWizard
                     sw.WriteLine("resourcesInternalPath=JSON # Resources 내부 경로");
                 }
 
-                config["defaultExcelDirectoryPath"] = "excel_files";
-                config["defaultLoaderOutputDirectory"] = "loader_output";
-                config["defaultJsonOutputDirectory"] = "json_output";
                 config["excelDirectoryPath"] = "excel_files";
                 config["loaderOutputDirectory"] = "loader_output";
                 config["jsonOutputDirectory"] = "json_output";
+                config["useAbsolutePath"] = "false";
                 config["allowMultipleSheets"] = "false";
                 config["useResources"] = "true";
                 config["resourcesInternalPath"] = "JSON";
@@ -108,23 +110,29 @@ namespace ExcelToJsonWizard
             return config;
         }
 
-        static string ValidateOrCreateDirectory(Dictionary<string, string> config, string key, string defaultDirectory)
+        static string ValidateOrCreateDirectory(Dictionary<string, string> config, string key, string defaultDirectory, bool useAbsolutePath, string basePath)
         {
             string path;
             if (config.ContainsKey(key))
             {
                 path = config[key];
+
+                // 상대 경로 사용 옵션이 꺼져 있다면 실행 파일 경로를 기준으로 변환
+                if (!useAbsolutePath && !Path.IsPathRooted(path))
+                {
+                    path = Path.Combine(basePath, path);
+                }
             }
             else
             {
-                path = defaultDirectory;
+                path = Path.Combine(basePath, defaultDirectory);
             }
 
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
+                Console.WriteLine($"Created directory: {path}");
             }
-
             return path;
         }
 
