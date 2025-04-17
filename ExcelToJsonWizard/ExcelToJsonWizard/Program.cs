@@ -274,6 +274,21 @@ namespace ExcelToJsonWizard
                             var types = worksheet.Row(2).Cells();
                             var descriptions = worksheet.Row(3).Cells();
 
+                            int validColumnCount = 0;
+                            for (int i = 0; i < headers.Count(); i++)
+                            {
+                                string header = headers.ElementAt(i).GetString();
+                                string type = types.ElementAt(i).GetString();
+
+                                // 빈 셀이 하나라도 나오면 중단
+                                if (string.IsNullOrWhiteSpace(header) || string.IsNullOrWhiteSpace(type))
+                                {
+                                    break;
+                                }
+
+                                validColumnCount++;
+                            }
+
                             if (!headers.ElementAt(0).GetString().Equals("key", StringComparison.OrdinalIgnoreCase))
                             {
                                 throw new Exception("The first column must be 'key'.");
@@ -284,7 +299,7 @@ namespace ExcelToJsonWizard
                                 throw new Exception("The type of the first column must be 'int'.");
                             }
 
-                            for (int i = 0; i < headers.Count(); i++)
+                            for (int i = 0; i < validColumnCount; i++)
                             {
                                 var variableName = headers.ElementAt(i).GetString();
                                 var dataType = types.ElementAt(i).GetString();
@@ -386,16 +401,20 @@ namespace ExcelToJsonWizard
                             var jsonArray = new List<Dictionary<string, object>>();
                             var keySet = new HashSet<int>();
 
+
+
                             for (int i = 4; i <= worksheet.LastRowUsed().RowNumber(); i++)
                             {
                                 var row = worksheet.Row(i);
                                 var rowDict = new Dictionary<string, object>();
 
-                                for (int j = 0; j < headers.Count(); j++)
+                                for (int j = 0; j < validColumnCount; j++)
                                 {
                                     var variableName = headers.ElementAt(j).GetString();
                                     var dataType = types.ElementAt(j).GetString();
                                     var cellValue = row.Cell(j + 1).GetValue<string>();
+
+                                    
 
                                     var convertedValue = ConvertToType(cellValue, dataType, variableName, logFilePath, excelPath, worksheet.Name);
 
